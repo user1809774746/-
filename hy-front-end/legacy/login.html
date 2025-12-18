@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>登录 · 好游</title>
+  <link rel="stylesheet" href="./login.css?v=2" />
+</head>
+<body>
+  <header class="topbar simple">
+    <div class="title">登录/注册</div>
+  </header>
+
+  <main class="login-container">
+    <div class="login-tabs" role="tablist">
+      <button type="button" class="tab-btn active" data-mode="password">密码登录</button>
+      <button type="button" class="tab-btn" data-mode="code">验证码登录</button>
+    </div>
+    <form id="loginForm" class="login-form" autocomplete="off" novalidate>
+      <div class="form-group">
+        <label for="phone">手机号</label>
+        <input id="phone" type="tel" inputmode="numeric" placeholder="请输入11位手机号" maxlength="11" />
+      </div>
+      <div class="code-box" style="display:none">
+      <div class="form-group code-group">
+        <!-- <label for="code">验证码</label> -->
+        <input id="code" type="text" inputmode="numeric" placeholder="请输入6位验证码" maxlength="6" />
+      </div>
+      <button id="sendCodeBtn" type="button" class="ghost">获取验证码</button>
+      </div>
+      <div class="form-group password-group">
+        <div class="password-field">
+          <label for="password">密码</label>
+          <input id="password" type="password" placeholder="请输入密码" maxlength="32" />
+          <img src="./imge/小眼睛关闭-copy.png" id="togglePwBtn" class="toggle-pw" aria-label="切换显示密码" />
+        </div>
+      </div>
+      <button id="loginBtn" type="submit" class="primary">登录</button>
+      <div class="bottom-box">
+      <p class="form-tip">好游，好旅行</p>
+      <a href="./register.html" class="register-link">注册</a>
+    </div>
+    </form>
+  </main>
+
+  <script src="./login.js?v=2"></script>
+</body>
+</html>

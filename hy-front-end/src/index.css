@@ -1,0 +1,140 @@
+@import 'leaflet/dist/leaflet.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* 自定义样式 */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* 热门路线封面图 - 最外层框：blue-100 背景 + 左右圆咬口 */
+.stamp-frame {
+  position: relative;
+  display: inline-block;
+  background-color: #E0C6C4; /* 类似 tailwind blue-100 */
+  padding: 8px;              /* 外层蓝色边距 */
+  /* border-radius: 24px; */
+  filter: drop-shadow(0 4px 8px rgba(15, 23, 42, 0.18));
+  width: 100%;               /* 响应式宽度 */
+  max-width: 100%;           /* 移除最大宽度限制，让它填满容器 */
+  box-sizing: border-box;
+}
+
+/* 左右两边的 blue-100 圆咬口 */
+.stamp-frame::before,
+.stamp-frame::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 20px;
+  /* background-image: radial-gradient(circle, #DBEAFE 10px, transparent 11px); */
+  background-size: 20px 20px;
+  background-repeat: repeat-y;
+}
+
+.stamp-frame::before {
+  left: -10px; /* 左侧圆咬口向外突出 */
+}
+
+.stamp-frame::after {
+  right: -10px; /* 右侧圆咬口向外突出 */
+}
+
+/* 热门路线封面图 - 白色邮票主体（响应式尺寸 + 白底），负责上下圆咬口 */
+.stamp-wrapper {
+  position: relative;
+  width: 100%;           /* 响应式宽度，自动适配父容器 */
+  max-width: 100%;       /* 确保不超出容器 */
+  padding: 20px;         /* 白色边距 */
+  background-color: #ffffff;
+  border-radius: 20px;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+/* 上下两条边的 blue-100 圆形“邮票齿孔” */
+.stamp-wrapper::before,
+.stamp-wrapper::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 20px;
+  background-image: radial-gradient(circle,#E0C6C4 10px, transparent 10px);
+  background-size: 20px 20px;
+  background-repeat: repeat-x;
+}
+
+.stamp-wrapper::before {
+  top: -10px;   /* 上边圆咬口 */
+}
+
+.stamp-wrapper::after {
+  bottom: -10px; /* 下边圆咬口 */
+}
+
+/* 内层白底容器，包住真正的图片，响应式高度 */
+.stamp-inner {
+  position: relative;
+  width: 100%;
+  height: 0;              /* 使用padding-bottom实现响应式高度 */
+  padding-bottom: 35%;    /* 高度为宽度的35%，在大屏上显示更大 */
+  background-color: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  min-height: 120px;      /* 设置最小高度，确保在小屏上不会太小 */
+}
+
+/* 图片绝对定位填充容器 */
+.stamp-inner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Toast通知动画 */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 6;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+/* 3D透视效果 - 用于活动堆叠卡片 */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* 隐藏滚动条但保持滚动功能 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

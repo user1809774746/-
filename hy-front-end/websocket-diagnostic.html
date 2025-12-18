@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket诊断工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .test-section { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 WebSocket诊断工具</h1>
+    
+    <div class="test-section">
+        <h3>1. 环境检查</h3>
+        <button onclick="checkEnvironment()">检查环境</button>
+        <div id="env-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. 后端服务检查</h3>
+        <button onclick="checkBackendService()">检查后端服务</button>
+        <div id="backend-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. WebSocket连接测试</h3>
+        <button onclick="testWebSocketConnections()">测试WebSocket连接</button>
+        <div id="websocket-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. 代理配置测试</h3>
+        <button onclick="testProxyConfig()">测试代理配置</button>
+        <div id="proxy-result" class="log"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function checkEnvironment() {
+            const result = document.getElementById('env-result');
+            result.innerHTML = '';
+            
+            log('env-result', '🔍 检查浏览器环境...', 'info');
+            log('env-result', `协议: ${window.location.protocol}`, 'info');
+            log('env-result', `主机: ${window.location.host}`, 'info');
+            log('env-result', `完整URL: ${window.location.href}`, 'info');
+            log('env-result', `WebSocket支持: ${window.WebSocket ? '✅ 支持' : '❌ 不支持'}`, window.WebSocket ? 'success' : 'error');
+            
+            if (window.location.protocol === 'https:') {
+                log('env-result', '⚠️ HTTPS环境，WebSocket需要使用WSS协议', 'warning');
+            } else {
+                log('env-result', '✅ HTTP环境，可以使用WS协议', 'success');
+            }
+        }
+
+        async function checkBackendService() {
+            const result = document.getElementById('backend-result');
+            result.innerHTML = '';
+            
+            log('backend-result', '🔍 检查后端服务...', 'info');
+            
+            try {
+                // 测试HTTP API是否可用
+                const response = await fetch('/api/auth/profile');
+                if (response.ok || response.status === 401) {
+                    log('backend-result', '✅ 后端HTTP服务正常', 'success');
+                } else {
+                    log('backend-result', `⚠️ 后端HTTP服务异常: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log('backend-result', `❌ 后端HTTP服务不可用: ${error.message}`, 'error');
+            }
+            
+            // 测试直连后端
+            try {
+                const directResponse = await fetch('http://localhost:8082/api/auth/profile');
+                if (directResponse.ok || directResponse.status === 401) {
+                    log('backend-result', '✅ 直连后端服务正常', 'success');
+                } else {
+                    log('backend-result', `⚠️ 直连后端服务异常: ${directResponse.status}`, 'warning');
+                }
+            } catch (error) {
+                log('backend-result', `❌ 直连后端服务不可用: ${error.message}`, 'error');
+            }
+        }
+
+        function testWebSocketConnections() {
+            const result = document.getElementById('websocket-result');
+            result.innerHTML = '';
+            
+            log('websocket-result', '🔍 测试WebSocket连接...', 'info');
+            
+            const userId = 1; // 测试用户ID
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            
+            // 测试代理连接
+            const proxyUrl = `${protocol}//${host}/ws/chat/native?userId=${userId}`;
+            log('websocket-result', `测试代理连接: ${proxyUrl}`, 'info');
+            
+            const proxyWs = new WebSocket(proxyUrl);
+            
+            proxyWs.onopen = () => {
+                log('websocket-result', '✅ 代理WebSocket连接成功', 'success');
+                proxyWs.close();
+            };
+            
+            proxyWs.onerror = (error) => {
+                log('websocket-result', '❌ 代理WebSocket连接失败', 'error');
+                console.error('代理连接错误:', error);
+            };
+            
+            proxyWs.onclose = (event) => {
+                log('websocket-result', `🔌 代理连接关闭: ${event.code} - ${event.reason}`, 'info');
+            };
+            
+            // 测试直连
+            const directUrl = `ws://localhost:8082/ws/chat/native?userId=${userId}`;
+            log('websocket-result', `测试直连: ${directUrl}`, 'info');
+            
+            const directWs = new WebSocket(directUrl);
+            
+            directWs.onopen = () => {
+                log('websocket-result', '✅ 直连WebSocket连接成功', 'success');
+                directWs.close();
+            };
+            
+            directWs.onerror = (error) => {
+                log('websocket-result', '❌ 直连WebSocket连接失败', 'error');
+                console.error('直连错误:', error);
+            };
+            
+            directWs.onclose = (event) => {
+                log('websocket-result', `🔌 直连关闭: ${event.code} - ${event.reason}`, 'info');
+            };
+            
+            // 超时检查
+            setTimeout(() => {
+                if (proxyWs.readyState === WebSocket.CONNECTING) {
+                    log('websocket-result', '⏰ 代理连接超时', 'warning');
+                    proxyWs.close();
+                }
+                if (directWs.readyState === WebSocket.CONNECTING) {
+                    log('websocket-result', '⏰ 直连超时', 'warning');
+                    directWs.close();
+                }
+            }, 5000);
+        }
+
+        async function testProxyConfig() {
+            const result = document.getElementById('proxy-result');
+            result.innerHTML = '';
+            
+            log('proxy-result', '🔍 测试代理配置...', 'info');
+            
+            // 检查是否在开发环境
+            if (window.location.port === '3000') {
+                log('proxy-result', '✅ 运行在开发服务器端口3000', 'success');
+            } else {
+                log('proxy-result', '⚠️ 不在标准开发端口，代理可能不生效', 'warning');
+            }
+            
+            // 测试代理路径
+            try {
+                const response = await fetch('/api/auth/profile');
+                log('proxy-result', '✅ API代理正常工作', 'success');
+            } catch (error) {
+                log('proxy-result', '❌ API代理不工作', 'error');
+            }
+            
+            log('proxy-result', '📋 代理配置检查完成', 'info');
+            log('proxy-result', '如果WebSocket代理失败，请检查:', 'info');
+            log('proxy-result', '1. Vite配置中的/ws代理设置', 'info');
+            log('proxy-result', '2. 后端WebSocket端点是否正确', 'info');
+            log('proxy-result', '3. 防火墙是否阻止连接', 'info');
+        }
+    </script>
+</body>
+</html>

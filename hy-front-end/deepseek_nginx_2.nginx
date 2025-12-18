@@ -1,0 +1,269 @@
+map $http_origin $cors_header {
+    # 允许的域名列表 - 支持带www和不带www
+    "~^https?://(www\.)?amapmcpserver\.xyz$" $http_origin;
+    default "";
+}
+
+# =============================================
+# HTTP 服务器 - 将所有HTTP流量重定向到HTTPS (不带www)
+# =============================================
+server {
+    listen 80;
+    listen [::]:80;
+    server_name amapmcpserver.xyz www.amapmcpserver.xyz;
+    
+    # 安全头部
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    
+    # ACME 挑战验证目录
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        allow all;
+        default_type "text/plain";
+        try_files $uri =404;
+    }
+    
+    # 将所有流量重定向到不带www的HTTPS版本
+    location / {
+        return 301 https://amapmcpserver.xyz$request_uri;
+    }
+    
+    access_log /var/log/nginx/http_access.log main;
+    error_log /var/log/nginx/http_error.log warn;
+}
+
+# =============================================
+# HTTPS 服务器 - 主配置 (统一使用amapmcpserver.xyz)
+# =============================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name amapmcpserver.xyz;
+    
+    # ========================
+    # SSL 证书配置
+    # ========================
+    ssl_certificate /etc/letsencrypt/live/amapmcpserver.xyz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/amapmcpserver.xyz/privkey.pem;
+    
+    # ========================
+    # SSL 会话设置
+    # ========================
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    
+    # ========================
+    # 现代加密协议配置
+    # ========================
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
+    ssl_prefer_server_ciphers off;
+    ssl_ecdh_curve secp384r1;
+    
+    # ========================
+    # OCSP 装订优化
+    # ========================
+    resolver 8.8.8.8 1.1.1.1 [2606:4700:4700::1111] valid=300s;
+    resolver_timeout 5s;
+    
+    # ========================
+    # 安全头部增强
+    # ========================
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    
+    # ========================
+    # 网站根目录配置
+    # ========================
+    root /root/dist;
+    index index.html index.htm;
+    
+    # ========================
+    # 日志配置
+    # ========================
+    access_log /var/log/nginx/ssl_access.log main;
+    error_log /var/log/nginx/ssl_error.log warn;
+    
+    # ========================
+    # 主请求处理
+    # ========================
+    location / {
+        try_files $uri $uri/ @rewrite;
+        
+        # 前端静态资源不缓存
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
+    }
+    
+    location @rewrite {
+        rewrite ^.*$ /index.html last;
+    }
+    
+    # ========================
+    # WebSocket 配置
+    # ========================
+    location ~ ^/ws/ {
+        proxy_pass http://localhost:8082;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebSocket需要更长的超时时间
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+        
+        # CORS头部
+        add_header Access-Control-Allow-Origin $cors_header always;
+        
+        # 禁用缓存
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # ========================
+    # API 代理配置
+    # ========================
+    location ~* ^/api/ {
+        proxy_pass http://localhost:8082;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # 超时设置
+        proxy_read_timeout 300;
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+        
+        # 处理OPTIONS预检请求
+        if ($request_method = 'OPTIONS') {
+            add_header Access-Control-Allow-Origin $cors_header always;
+            add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
+            add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,Accept,Origin' always;
+            add_header Access-Control-Max-Age 1728000 always;
+            add_header Access-Control-Expose-Headers 'Content-Length,Content-Range' always;
+            add_header Content-Length 0;
+            add_header Content-Type 'text/plain; charset=UTF-8';
+            return 204;
+        }
+        
+        # 非 OPTIONS 请求的 CORS 头部
+        add_header Access-Control-Allow-Origin $cors_header always;
+        add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS, PUT, DELETE, PATCH' always;
+        add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,Accept,Origin' always;
+        add_header Access-Control-Expose-Headers 'Content-Length,Content-Range' always;
+        
+        # API缓存控制
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
+    }
+    
+    # ========================
+    # 图片静态资源配置
+    # ========================
+    location /images/ {
+        # 指向后端图片实际存储路径（使用软链接避免括号问题）
+        alias /root/backend-images/;
+        
+        # 缓存设置
+        expires 30d;
+        add_header Cache-Control "public, immutable" always;
+        
+        # CORS头部（允许跨域访问图片）
+        add_header Access-Control-Allow-Origin $cors_header always;
+        add_header Access-Control-Allow-Methods 'GET, OPTIONS' always;
+        add_header Access-Control-Allow-Headers 'Origin, X-Requested-With, Content-Type, Accept' always;
+        
+        # 日志优化
+        access_log off;
+        
+        # 错误处理
+        error_page 404 = @image_not_found;
+    }
+    
+    # 图片404处理
+    location @image_not_found {
+        add_header Content-Type text/plain;
+        return 404 'Image not found';
+    }
+    
+    # ========================
+    # 静态文件缓存
+    # ========================
+    location ~* \.(?:jpg|jpeg|png|gif|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc|webp)$ {
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+        access_log off;
+    }
+    
+    location ~* \.(?:css|js|woff2?)$ {
+        expires 1d;
+        add_header Cache-Control "public, max-age=86400";
+        access_log off;
+    }
+    
+    # ========================
+    # 安全防护
+    # ========================
+    location ~ /\.(?!well-known) {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    location = /favicon.ico { 
+        access_log off; 
+        log_not_found off; 
+    }
+    
+    location = /robots.txt { 
+        access_log off; 
+        log_not_found off; 
+    }
+    
+    # ========================
+    # 性能优化
+    # ========================
+    aio threads;
+    directio 4m;
+    output_buffers 1 128k;
+    
+    # Gzip压缩
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript application/json application/javascript application/xml+rss application/rss+xml font/truetype font/opentype application/vnd.ms-fontobject image/svg+xml;
+    gzip_disable "msie6";
+}
+
+# =============================================
+# HTTPS 服务器 - www子域名重定向到非www版本
+# =============================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name www.amapmcpserver.xyz;
+    
+    # SSL证书配置
+    ssl_certificate /etc/letsencrypt/live/amapmcpserver.xyz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/amapmcpserver.xyz/privkey.pem;
+    
+    # 将所有www请求重定向到非www版本
+    return 301 https://amapmcpserver.xyz$request_uri;
+}

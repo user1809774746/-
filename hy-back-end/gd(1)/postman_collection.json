@@ -1,0 +1,136 @@
+{
+  "info": {
+    "name": "Auth System API",
+    "description": "认证系统接口测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "发送验证码",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"18830364127\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/auth/send-verification-code",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "auth", "send-verification-code"]
+        }
+      }
+    },
+    {
+      "name": "用户注册",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser001\",\n  \"phone\": \"18830364127\",\n  \"verificationCode\": \"{{verificationCode}}\",\n  \"password\": \"123456\",\n  \"confirmPassword\": \"123456\",\n  \"userProfilePic\": \"https://example.com/avatar.jpg\",\n  \"userType\": \"user\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "auth", "register"]
+        }
+      }
+    },
+    {
+      "name": "用户登录",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"userType\": \"{{userType}}\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "获取用户信息",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8081/api/auth/profile",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "auth", "profile"]
+        }
+      }
+    },
+    {
+      "name": "获取验证码（测试用）",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8081/api/test/get-sent-code/{{phone}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8081",
+          "path": ["api", "test", "get-sent-code", "{{phone}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "verificationCode",
+      "value": "704208"
+    },
+    {
+      "key": "username",
+      "value": "testuser001"
+    },
+    {
+      "key": "password",
+      "value": "123456"
+    },
+    {
+      "key": "userType",
+      "value": "user"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "phone",
+      "value": "18830364127"
+    }
+  ]
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试高德地图API Key</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #357ae8;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: none;
+        }
+        .steps {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .steps h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ 高德地图API Key测试工具</h1>
+        
+        <div class="steps">
+            <h3>使用步骤：</h3>
+            <ol>
+                <li>访问 <a href="https://lbs.amap.com/" target="_blank">高德开放平台</a> 获取API Key</li>
+                <li>在下方输入框中粘贴您的API Key</li>
+                <li>点击"测试API Key"按钮</li>
+                <li>查看测试结果</li>
+            </ol>
+        </div>
+
+        <div class="input-group">
+            <label for="apiKey">请输入您的高德地图API Key：</label>
+            <input 
+                type="text" 
+                id="apiKey" 
+                placeholder="例如：abc123def456789..." 
+                value="d6e8e47c2dec58d22cf2297a0a83df0a"
+            >
+        </div>
+
+        <button onclick="testApiKey()" id="testBtn">🔍 测试API Key</button>
+        
+        <div id="result" class="result"></div>
+        <div id="map"></div>
+    </div>
+
+    <script>
+        function testApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const resultDiv = document.getElementById('result');
+            const mapDiv = document.getElementById('map');
+            const testBtn = document.getElementById('testBtn');
+
+            // 清空之前的结果
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'result';
+            mapDiv.style.display = 'none';
+            mapDiv.innerHTML = '';
+
+            // 验证输入
+            if (!apiKey) {
+                showResult('error', '❌ 请输入API Key！');
+                return;
+            }
+
+            if (apiKey.length < 20) {
+                showResult('error', '❌ API Key格式不正确（长度太短）');
+                return;
+            }
+
+            // 禁用按钮
+            testBtn.disabled = true;
+            testBtn.textContent = '🔄 测试中...';
+            showResult('info', '⏳ 正在加载高德地图API...');
+
+            // 移除旧的脚本
+            const oldScript = document.querySelector('script[src*="webapi.amap.com"]');
+            if (oldScript) {
+                oldScript.remove();
+            }
+            
+            // 清除旧的AMap对象
+            if (window.AMap) {
+                delete window.AMap;
+            }
+
+            // 加载地图API
+            const script = document.createElement('script');
+            script.src = `https://webapi.amap.com/maps?v=1.4.15&key=${apiKey}`;
+            
+            script.onload = function() {
+                if (window.AMap) {
+                    showResult('success', '✅ API Key有效！正在创建地图...');
+                    
+                    // 尝试创建地图
+                    setTimeout(() => {
+                        try {
+                            mapDiv.style.display = 'block';
+                            const map = new AMap.Map('map', {
+                                zoom: 13,
+                                center: [116.397428, 39.90923] // 北京
+                            });
+
+                            map.on('complete', function() {
+                                showResult('success', 
+                                    '🎉 API Key测试成功！\n\n' +
+                                    '✓ API加载正常\n' +
+                                    '✓ 地图创建成功\n' +
+                                    '✓ 可以在您的应用中使用此Key\n\n' +
+                                    '📍 请将此Key配置到：src/config/amapConfig.js'
+                                );
+                                testBtn.disabled = false;
+                                testBtn.textContent = '🔍 测试API Key';
+                            });
+
+                            map.on('error', function(error) {
+                                showResult('error', 
+                                    `❌ 地图加载失败\n\n` +
+                                    `错误信息: ${error.message || '未知错误'}\n\n` +
+                                    `可能原因：\n` +
+                                    `1. API Key配置了白名单限制\n` +
+                                    `2. 服务未开通或已过期\n` +
+                                    `3. 网络连接问题`
+                                );
+                                testBtn.disabled = false;
+                                testBtn.textContent = '🔍 测试API Key';
+                            });
+                        } catch (error) {
+                            showResult('error', 
+                                `❌ 创建地图失败\n\n` +
+                                `错误: ${error.message}\n\n` +
+                                `请检查API Key配置`
+                            );
+                            testBtn.disabled = false;
+                            testBtn.textContent = '🔍 测试API Key';
+                        }
+                    }, 500);
+                } else {
+                    showResult('error', '❌ API加载失败，但未返回错误信息');
+                    testBtn.disabled = false;
+                    testBtn.textContent = '🔍 测试API Key';
+                }
+            };
+
+            script.onerror = function() {
+                showResult('error', 
+                    `❌ API Key无效或加载失败\n\n` +
+                    `错误代码: INVALID_USER_KEY\n\n` +
+                    `可能原因：\n` +
+                    `1. API Key不正确\n` +
+                    `2. API Key已被删除或禁用\n` +
+                    `3. Key类型不是"Web端(JS API)"\n` +
+                    `4. 网络问题\n\n` +
+                    `解决方法：\n` +
+                    `• 重新检查API Key是否复制完整\n` +
+                    `• 在高德控制台确认Key状态正常\n` +
+                    `• 确保使用的是Web端(JS API)类型的Key`
+                );
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 测试API Key';
+            };
+
+            document.head.appendChild(script);
+        }
+
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = message.replace(/\n/g, '<br>');
+        }
+
+        // 页面加载时的提示
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const keyParam = urlParams.get('key');
+            if (keyParam) {
+                document.getElementById('apiKey').value = keyParam;
+                testApiKey();
+            }
+        };
+    </script>
+</body>
+</html>
+

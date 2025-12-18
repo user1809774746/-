@@ -1,0 +1,417 @@
+{
+  "info": {
+    "name": "用户通知系统 API 测试",
+    "description": "用户通知系统完整的API测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token_user_a",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_user_b",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 准备工作",
+      "item": [
+        {
+          "name": "1.1 用户A登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.code === 200 && jsonData.data.token) {",
+                  "    pm.collectionVariables.set(\"token_user_a\", jsonData.data.token);",
+                  "    console.log(\"用户A Token已保存:\", jsonData.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800138001\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "1.2 用户B登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.code === 200 && jsonData.data.token) {",
+                  "    pm.collectionVariables.set(\"token_user_b\", jsonData.data.token);",
+                  "    console.log(\"用户B Token已保存:\", jsonData.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800138002\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "1.3 用户A创建帖子",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.code === 200 && jsonData.data.id) {",
+                  "    pm.collectionVariables.set(\"post_id\", jsonData.data.id);",
+                  "    console.log(\"帖子ID已保存:\", jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"美丽的桂林之旅\",\n  \"content\": \"桂林山水甲天下，这里有美丽的漓江、壮观的溶洞...\",\n  \"postType\": \"travel_note\",\n  \"contentType\": \"richtext\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/post/create",
+              "host": ["{{base_url}}"],
+              "path": ["api", "post", "create"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 评论通知测试",
+      "item": [
+        {
+          "name": "2.1 用户B评论用户A的帖子",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_b}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": {{post_id}},\n  \"commentContent\": \"这个地方太美了！我也想去！\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/post/comment",
+              "host": ["{{base_url}}"],
+              "path": ["api", "post", "comment"]
+            }
+          }
+        },
+        {
+          "name": "2.2 用户A查看通知列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/list",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "list"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 收藏通知测试",
+      "item": [
+        {
+          "name": "3.1 用户B收藏用户A的帖子",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_b}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/favorite/post/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "favorite", "post", "{{post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "3.2 用户A查看未读通知",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/unread",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "unread"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 通知查询接口",
+      "item": [
+        {
+          "name": "4.1 获取所有通知",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/list",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "list"]
+            }
+          }
+        },
+        {
+          "name": "4.2 获取未读通知",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/unread",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "unread"]
+            }
+          }
+        },
+        {
+          "name": "4.3 获取评论类型通知",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/type/COMMENT",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "type", "COMMENT"]
+            }
+          }
+        },
+        {
+          "name": "4.4 获取收藏类型通知",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/type/FAVORITE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "type", "FAVORITE"]
+            }
+          }
+        },
+        {
+          "name": "4.5 获取通知统计",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "stats"]
+            }
+          }
+        },
+        {
+          "name": "4.6 获取未读数量",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "unread-count"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 通知管理接口",
+      "item": [
+        {
+          "name": "5.1 标记单个通知为已读",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "1", "read"]
+            }
+          }
+        },
+        {
+          "name": "5.2 标记所有通知为已读",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "read-all"]
+            }
+          }
+        },
+        {
+          "name": "5.3 删除单个通知",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "1"]
+            }
+          }
+        },
+        {
+          "name": "5.4 删除所有已读通知",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user_a}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "read-all"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

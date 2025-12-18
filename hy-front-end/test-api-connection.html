@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API连接测试工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; text-align: center; }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2980b9; }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { background: #d5f4e6; border: 1px solid #27ae60; }
+        .error { background: #fadbd8; border: 1px solid #e74c3c; }
+        .info { background: #d6eaf8; border: 1px solid #3498db; }
+        .warning { background: #fdeaa7; border: 1px solid #f39c12; }
+        input[type="text"] {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 0 10px;
+        }
+        .status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 API连接测试工具</h1>
+        
+        <div class="test-section">
+            <h3>📡 服务器配置</h3>
+            <label>后端地址：</label>
+            <input type="text" id="serverUrl" value="http://localhost:8081" />
+            <button onclick="updateServer()">更新</button>
+            <div id="serverInfo" class="result info">当前后端地址：http://localhost:8081 (同机器部署)</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 基础连接测试</h3>
+            <button onclick="testBasicConnection()">测试直接连接</button>
+            <button onclick="testProxyConnection()">测试代理连接</button>
+            <button onclick="testCORS()">测试CORS策略</button>
+            <div id="basicResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 API端点测试</h3>
+            <button onclick="testSendCode()">测试发送验证码</button>
+            <button onclick="testLogin()">测试登录接口</button>
+            <button onclick="testProfile()">测试用户信息</button>
+            <div id="apiResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 网络诊断</h3>
+            <button onclick="checkNetworkInfo()">检查网络信息</button>
+            <button onclick="testDifferentMethods()">测试不同请求方式</button>
+            <div id="networkResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💡 解决方案</h3>
+            <button onclick="showCORSSolutions()">CORS解决方案</button>
+            <button onclick="showNetworkSolutions()">网络问题解决方案</button>
+            <div id="solutionResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let SERVER_URL = 'http://localhost:8081';
+
+        function updateServer() {
+            SERVER_URL = document.getElementById('serverUrl').value;
+            document.getElementById('serverInfo').innerHTML = `当前后端地址：${SERVER_URL}`;
+            document.getElementById('serverInfo').className = 'result info';
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+        }
+
+        async function testBasicConnection() {
+            showResult('basicResult', '🔄 正在测试直接连接...', 'info');
+            
+            try {
+                // 测试简单的GET请求
+                const response = await fetch(SERVER_URL, { 
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                showResult('basicResult', 
+                    `✅ 直接连接成功！\n状态码: ${response.status}\n响应头: ${JSON.stringify([...response.headers.entries()], null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('basicResult', 
+                    `❌ 直接连接失败！\n错误信息: ${error.message}\n错误类型: ${error.name}\n\n可能原因:\n1. 后端服务未启动\n2. 防火墙阻止\n3. CORS跨域限制\n4. 网络连接问题\n\n💡 提示: 如果代理连接成功，说明后端正常，只是防火墙问题`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testProxyConnection() {
+            showResult('basicResult', '🔄 正在测试代理连接...', 'info');
+            
+            try {
+                // 通过代理测试API连接
+                const response = await fetch('/api/auth/send-verification-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: '13800138000'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                showResult('basicResult', 
+                    `✅ 代理连接成功！\n状态码: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}\n\n🎉 前端应用可以正常使用！`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('basicResult', 
+                    `❌ 代理连接失败！\n错误信息: ${error.message}\n\n这表示Vite代理配置有问题`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testCORS() {
+            showResult('basicResult', '🔄 正在测试CORS策略...', 'info');
+            
+            try {
+                const response = await fetch(SERVER_URL + '/api/auth/send-verification-code', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                
+                showResult('basicResult', 
+                    `✅ CORS预检请求成功！\n状态码: ${response.status}\nCORS配置:\n${JSON.stringify(corsHeaders, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('basicResult', 
+                    `❌ CORS测试失败！\n错误: ${error.message}\n\n这通常表示后端没有正确配置CORS策略`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testSendCode() {
+            showResult('apiResult', '🔄 正在测试发送验证码接口...', 'info');
+            
+            try {
+                const response = await fetch(SERVER_URL + '/api/auth/send-verification-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: '13800138000'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('apiResult', 
+                        `✅ 发送验证码接口正常！\n状态码: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}`, 
+                        'success'
+                    );
+                } else {
+                    showResult('apiResult', 
+                        `⚠️ 接口响应异常\n状态码: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}`, 
+                        'warning'
+                    );
+                }
+            } catch (error) {
+                showResult('apiResult', 
+                    `❌ 发送验证码接口失败！\n错误: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testLogin() {
+            showResult('apiResult', '🔄 正在测试登录接口...', 'info');
+            
+            try {
+                const response = await fetch(SERVER_URL + '/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: '13800138000',
+                        password: 'password123',
+                        userType: 'user'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                showResult('apiResult', 
+                    `📊 登录接口响应\n状态码: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}`, 
+                    response.ok ? 'success' : 'warning'
+                );
+            } catch (error) {
+                showResult('apiResult', 
+                    `❌ 登录接口失败！\n错误: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testProfile() {
+            showResult('apiResult', '🔄 正在测试用户信息接口...', 'info');
+            
+            try {
+                const response = await fetch(SERVER_URL + '/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer test-token'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                showResult('apiResult', 
+                    `📊 用户信息接口响应\n状态码: ${response.status}\n响应: ${JSON.stringify(data, null, 2)}`, 
+                    response.status === 401 ? 'warning' : (response.ok ? 'success' : 'error')
+                );
+            } catch (error) {
+                showResult('apiResult', 
+                    `❌ 用户信息接口失败！\n错误: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        function checkNetworkInfo() {
+            const info = `
+🌐 当前页面信息:
+- 页面地址: ${window.location.href}
+- 协议: ${window.location.protocol}
+- 主机: ${window.location.host}
+- 用户代理: ${navigator.userAgent}
+
+🎯 目标服务器:
+- 后端地址: ${SERVER_URL}
+- 跨域情况: ${window.location.origin !== SERVER_URL ? '是（跨域请求）' : '否（同域请求）'}
+
+📊 浏览器支持:
+- Fetch API: ${typeof fetch !== 'undefined' ? '✅ 支持' : '❌ 不支持'}
+- CORS: ${typeof XMLHttpRequest !== 'undefined' ? '✅ 支持' : '❌ 不支持'}
+            `;
+            
+            showResult('networkResult', info, 'info');
+        }
+
+        async function testDifferentMethods() {
+            showResult('networkResult', '🔄 正在测试不同请求方式...', 'info');
+            
+            const methods = ['GET', 'POST', 'OPTIONS'];
+            const results = [];
+            
+            for (const method of methods) {
+                try {
+                    const response = await fetch(SERVER_URL, { method });
+                    results.push(`${method}: ✅ ${response.status} ${response.statusText}`);
+                } catch (error) {
+                    results.push(`${method}: ❌ ${error.message}`);
+                }
+            }
+            
+            showResult('networkResult', 
+                `📊 不同HTTP方法测试结果:\n${results.join('\n')}`, 
+                'info'
+            );
+        }
+
+        function showCORSSolutions() {
+            const solutions = `
+🔧 CORS跨域问题解决方案:
+
+1️⃣ 后端解决方案（推荐）:
+   在Spring Boot后端添加CORS配置:
+   
+   @CrossOrigin(origins = "*", allowedHeaders = "*")
+   或者全局配置WebMvcConfigurer
+
+2️⃣ 前端代理解决方案:
+   修改vite.config.js添加代理:
+   
+   server: {
+     proxy: {
+       '/api': 'http://192.168.1.131:8081'
+     }
+   }
+
+3️⃣ 浏览器解决方案（临时）:
+   使用Chrome启动参数:
+   --disable-web-security --user-data-dir=/tmp/chrome
+
+4️⃣ 检查后端是否运行:
+   访问: http://192.168.1.131:8081
+   应该返回Spring Boot默认页面或API文档
+            `;
+            
+            showResult('solutionResult', solutions, 'info');
+        }
+
+        function showNetworkSolutions() {
+            const solutions = `
+🌐 网络问题解决方案:
+
+1️⃣ 检查后端服务状态:
+   - 确认Spring Boot应用运行在8081端口
+   - 检查服务器防火墙设置
+   - 确认IP地址192.168.1.131正确
+
+2️⃣ 检查网络连接:
+   - 确保前后端在同一网络
+   - 测试ping 192.168.1.131
+   - 检查路由器设置
+
+3️⃣ 防火墙设置:
+   - Windows: 允许Java/Node.js通过防火墙
+   - Linux: sudo ufw allow 8081
+   - Mac: 系统偏好设置 → 安全性 → 防火墙
+
+4️⃣ 端口检查:
+   - 确认8081端口未被占用
+   - 使用netstat -ano | findstr :8081检查
+            `;
+            
+            showResult('solutionResult', solutions, 'warning');
+        }
+
+        // 页面加载时执行初始检查
+        window.onload = function() {
+            checkNetworkInfo();
+            showResult('basicResult', '👋 点击上方按钮开始测试API连接', 'info');
+            showResult('apiResult', '📱 点击按钮测试具体的API接口', 'info');
+            showResult('solutionResult', '💡 遇到问题时点击查看解决方案', 'info');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>注册 · 好游</title>
+  <link rel="stylesheet" href="./register.css?v=2" />
+</head>
+<body>
+  <header class="topbar simple">
+    <div class="title">注册</div>
+  </header>
+
+  <main class="login-container">
+    <form id="registerForm" class="login-form" autocomplete="off" novalidate>
+      <div class="form-group">
+        <label for="phone">手机号</label>
+        <input id="phone" type="tel" inputmode="numeric" placeholder="请输入11位手机号" maxlength="11" />
+      </div>
+      
+      <div class="code-box">
+        <div class="form-group code-group">
+          <label for="code">验证码</label>
+          <input id="code" type="text" inputmode="numeric" placeholder="请输入6位验证码" maxlength="6" />
+        </div>
+        <button id="sendCodeBtn" type="button" class="ghost">获取验证码</button>
+      </div>
+      
+      <div class="form-group password-group">
+        <label for="password">设置密码</label>
+        <div class="password-field">
+          <input id="password" type="password" placeholder="请设置密码(至少6位)" maxlength="32" disabled />
+          <img src="./imge/小眼睛关闭-copy.png" id="togglePwBtn" class="toggle-pw" aria-label="切换显示密码" />
+        </div>
+      </div>
+      
+      <div class="form-group password-group">
+        <label for="password2">确认密码</label>
+        <div class="password-field">
+          <input id="password2" type="password" placeholder="请再次输入密码" maxlength="32" disabled />
+          <img src="./imge/小眼睛关闭-copy.png" id="togglePwBtn2" class="toggle-pw" aria-label="切换显示密码" />
+        </div>
+      </div>
+      
+      <button id="registerBtn" type="submit" class="primary">注册</button>
+      
+      <div class="bottom-box">
+        <p class="form-tip">好游，好旅行</p>
+        <a href="./login.html" class="register-link">已有账号？去登录</a>
+      </div>
+    </form>
+  </main>
+
+  <script src="./register.js?v=2"></script>
+</body>
+</html>

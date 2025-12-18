@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员注册接口调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-test {
+            background-color: #28a745;
+        }
+        
+        .btn-test:hover {
+            background-color: #1e7e34;
+        }
+        
+        .btn-clear {
+            background-color: #6c757d;
+        }
+        
+        .btn-clear:hover {
+            background-color: #545b62;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .debug {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 管理员注册接口调试工具</h1>
+        
+        <div class="form-group">
+            <label for="phone">手机号：</label>
+            <input type="text" id="phone" value="18888888888" placeholder="请输入11位手机号">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">密码：</label>
+            <input type="password" id="password" value="123123" placeholder="请输入密码（≥6位）">
+        </div>
+        
+        <div class="form-group">
+            <button onclick="testConnection()">🔗 测试后端连接</button>
+            <button onclick="registerAdmin()" class="btn-test">📝 注册管理员</button>
+            <button onclick="testLogin()" class="btn-test">🔑 测试登录</button>
+            <button onclick="clearResults()" class="btn-clear">🗑️ 清空结果</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8081';
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+            
+            // 滚动到底部
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function addStep(message) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'step';
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testConnection() {
+            addStep('步骤1：测试后端连接...');
+            
+            try {
+                const response = await fetch(`${API_BASE}`, {
+                    method: 'GET'
+                });
+                
+                if (response.ok || response.status === 404) {
+                    addResult('✅ 后端服务正常运行', 'success');
+                } else {
+                    addResult(`⚠️ 后端响应异常，状态码: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ 后端连接失败: ${error.message}`, 'error');
+                addResult('请检查：\n1. 后端是否启动？\n2. 端口是否为8081？\n3. 防火墙是否阻止？', 'debug');
+            }
+        }
+        
+        async function registerAdmin() {
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            addStep('步骤2：注册管理员...');
+            addResult(`请求参数:\n手机号: ${phone}\n密码: ${password}`, 'info');
+            
+            // 参数验证
+            if (!phone) {
+                addResult('❌ 手机号不能为空', 'error');
+                return;
+            }
+            
+            if (!password) {
+                addResult('❌ 密码不能为空', 'error');
+                return;
+            }
+            
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                addResult('❌ 手机号格式不正确', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                addResult('❌ 密码长度至少6位', 'error');
+                return;
+            }
+            
+            try {
+                addResult('发送注册请求...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/auth/admin/quick-register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        password: password
+                    })
+                });
+                
+                addResult(`HTTP状态码: ${response.status}`, 'info');
+                
+                // 获取原始响应文本
+                const responseText = await response.text();
+                addResult(`原始响应:\n${responseText}`, 'debug');
+                
+                // 尝试解析JSON
+                try {
+                    const data = JSON.parse(responseText);
+                    
+                    if (data.code === 200) {
+                        addResult('✅ 管理员注册成功！', 'success');
+                        addResult(`响应数据:\n${JSON.stringify(data, null, 2)}`, 'success');
+                    } else {
+                        addResult(`❌ 注册失败: ${data.message}`, 'error');
+                        addResult(`错误详情:\n${JSON.stringify(data, null, 2)}`, 'error');
+                    }
+                } catch (parseError) {
+                    addResult('❌ 响应不是有效的JSON格式', 'error');
+                    addResult(`解析错误: ${parseError.message}`, 'error');
+                    
+                    if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+                        addResult('⚠️ 后端返回HTML页面，可能是404错误（接口不存在）', 'error');
+                    } else if (responseText.includes('Whitelabel Error Page')) {
+                        addResult('⚠️ 后端返回Spring Boot错误页面', 'error');
+                    }
+                }
+                
+            } catch (error) {
+                addResult(`❌ 请求失败: ${error.message}`, 'error');
+                
+                if (error.message.includes('Failed to fetch')) {
+                    addResult('可能原因:\n1. 后端未启动\n2. CORS配置问题\n3. 网络连接问题', 'debug');
+                }
+            }
+        }
+        
+        async function testLogin() {
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            addStep('步骤3：测试管理员登录...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        password: password,
+                        userType: 'admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    addResult('✅ 管理员登录成功！', 'success');
+                    addResult(`Token: ${data.data.token}`, 'success');
+                } else {
+                    addResult(`❌ 登录失败: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ 登录测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载时自动测试连接
+        window.onload = function() {
+            addResult('🚀 管理员注册接口调试工具已启动', 'info');
+            addResult('建议操作顺序:\n1. 测试后端连接\n2. 注册管理员\n3. 测试登录', 'info');
+        };
+    </script>
+</body>
+</html>

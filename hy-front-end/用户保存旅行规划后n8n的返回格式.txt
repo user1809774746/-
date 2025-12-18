@@ -1,0 +1,197 @@
+[
+  {
+    "text": "保存成功!您的旅行计划已成功保存到数据库。",
+    "travel_plan": {
+      "title": "石家庄到北京游",
+      "destination": "北京",
+      "travel_days": 2,
+      "date": "2025.01.02-2025.01.03",
+      "total_budget": 930,
+      "budget_breakdown": {
+        "transportation": 200,
+        "accommodation": 300,
+        "tickets": 130,
+        "food": 200,
+        "other": 100
+      },
+      "daily_itinerary": [
+        {
+          "day": 1,
+          "date": "2025.01.02",
+          "activities": [
+            {
+              "time": "09:00 - 10:00",
+              "activity": "游览天安门广场",
+              "location": "东长安街",
+              "city": "北京",
+              "description": "中国的象征，周围有许多重要的建筑和纪念碑。",
+              "cost": 0,
+              "transportation": "步行",
+              "photo": "http://aos-cdn-image.amap.com/sns/ugccomment/fab72424-5643-4c14-9486-ae1c8475eab7.jpg"
+            },
+            {
+              "time": "10:30 - 13:00",
+              "activity": "参观故宫",
+              "location": "景山前街4号",
+              "city": "北京",
+              "description": "世界上最大的古代文化艺术博物馆。",
+              "cost": 60,
+              "transportation": "步行",
+              "photo": "http://store.is.autonavi.com/showpic/2f968490d105bb2741e17f90b85c6b79"
+            },
+            {
+              "time": "13:30 - 14:30",
+              "activity": "午餐",
+              "location": "王府井大街周边",
+              "city": "北京",
+              "description": "北京炸酱面和其他美食。",
+              "cost": 50,
+              "transportation": "步行",
+              "photo": ""
+            },
+            {
+              "time": "15:00 - 17:00",
+              "activity": "逛王府井大街",
+              "location": "东城区",
+              "city": "北京",
+              "description": "繁华的购物街，适合购买纪念品和品尝各种小吃。",
+              "cost": 0,
+              "transportation": "步行",
+              "photo": "https://aos-comment.amap.com/B000A7N6B0/comment/content_media_external_images_media_100000697_1739894748531_18111528.jpg"
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2025.01.03",
+          "activities": [
+            {
+              "time": "09:00 - 12:00",
+              "activity": "参观颐和园",
+              "location": "新建宫门路19号",
+              "city": "北京",
+              "description": "美丽的皇家园林，以昆明湖和万寿山为中心。",
+              "cost": 30,
+              "transportation": "地铁",
+              "photo": "http://store.is.autonavi.com/showpic/a4b326f43a84d36b581d7f6e856fe858"
+            },
+            {
+              "time": "12:30 - 13:30",
+              "activity": "午餐",
+              "location": "颐和园附近餐厅",
+              "city": "北京",
+              "description": "推荐京味小吃。",
+              "cost": 50,
+              "transportation": "步行",
+              "photo": ""
+            },
+            {
+              "time": "14:00 - 16:00",
+              "activity": "游览鸟巢（国家体育场）",
+              "location": "国家体育场南路1号",
+              "city": "北京",
+              "description": "奥运会的主场馆，建筑风格独特。",
+              "cost": 50,
+              "transportation": "地铁",
+              "photo": "http://store.is.autonavi.com/showpic/55957b6116c6ee3c8e843ad9051ec39f"
+            },
+            {
+              "time": "16:30",
+              "activity": "返回石家庄",
+              "location": "",
+              "city": "",
+              "description": "结束愉快的旅行。",
+              "cost": 0,
+              "transportation": "步行",
+              "photo": ""
+            }
+          ]
+        }
+      ],
+      "accommodation_recommendations": [
+        {
+          "name": "汉庭酒店(北京天安门广场店)",
+          "type": "经济型",
+          "location": "天安门附近",
+          "price_per_night": 150,
+          "advantages": "方便游览天安门和故宫",
+          "photo": "https://store.is.autonavi.com/showpic/48624625b2b8b9959e349ef8dbf4097a"
+        },
+        {
+          "name": "北京鸟巢桔子水晶酒店",
+          "type": "舒适型",
+          "location": "靠近鸟巢",
+          "price_per_night": 200,
+          "advantages": "方便游览奥运场馆",
+          "photo": "https://store.is.autonavi.com/showpic/0af854f98aa5ea54ade21b0de414de77"
+        }
+      ],
+      "attraction_details": [
+        {
+          "name": "天安门广场",
+          "ticket_price": {
+            "adult": 0,
+            "student": 0,
+            "elderly": 0
+          },
+          "log_lat": "39.9034,116.3911",
+          "opening_hours": "全天开放",
+          "must_see_spots": [
+            "人民英雄纪念碑",
+            "毛主席纪念堂"
+          ],
+          "tips": "建议早晨去，避免人潮高峰。"
+        },
+        {
+          "name": "故宫",
+          "ticket_price": {
+            "adult": 60,
+            "student": 30,
+            "elderly": 30
+          },
+          "log_lat": "39.9163,116.3975",
+          "opening_hours": "08:30 - 17:00",
+          "must_see_spots": [
+            "太和殿",
+            "乾清宫",
+            "御花园"
+          ],
+          "tips": "提前在线购票，节省排队时间。"
+        },
+        {
+          "name": "颐和园",
+          "ticket_price": {
+            "adult": 30,
+            "student": 15,
+            "elderly": 15
+          },
+          "log_lat": "39.9993,116.2742",
+          "opening_hours": "06:30 - 19:00",
+          "must_see_spots": [
+            "昆明湖",
+            "万寿山",
+            "十七孔桥"
+          ],
+          "tips": "尽量选择晴天参观，景色更佳。"
+        },
+        {
+          "name": "鸟巢",
+          "ticket_price": {
+            "adult": 50,
+            "student": 0,
+            "elderly": 0
+          },
+          "log_lat": "39.9934,116.3912",
+          "opening_hours": "现场确认",
+          "must_see_spots": [
+            "场馆外观",
+            "奥林匹克公园"
+          ],
+          "tips": "可以选择夜晚参观，鸟巢灯光效果特别。"
+        }
+      ],
+      "total_tips": "推荐住在正定古城旁边的民宿。",
+      "special_requirements": ""
+    }
+  }
+]

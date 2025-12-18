@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天API测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 聊天系统API测试</h1>
+        <p>测试后端聊天API接口是否正常工作</p>
+
+        <!-- 基础连接测试 -->
+        <div class="test-section">
+            <h3>1. 基础连接测试</h3>
+            <button onclick="testConnection()">测试后端连接</button>
+            <div id="connectionResult" class="result"></div>
+        </div>
+
+        <!-- 好友管理测试 -->
+        <div class="test-section">
+            <h3>2. 好友管理API测试</h3>
+            <input type="number" id="userId" placeholder="用户ID" value="18831231517">
+            <input type="number" id="friendId" placeholder="好友ID" value="12345678901">
+            <br>
+            <button onclick="testGetFriendsList()">获取好友列表</button>
+            <button onclick="testAddFriend()">添加好友</button>
+            <button onclick="testSearchUsers()">搜索用户</button>
+            <div id="friendsResult" class="result"></div>
+        </div>
+
+        <!-- 消息管理测试 -->
+        <div class="test-section">
+            <h3>3. 消息管理API测试</h3>
+            <input type="text" id="messageContent" placeholder="消息内容" value="Hello, 这是一条测试消息">
+            <select id="messageType">
+                <option value="text">文本消息</option>
+                <option value="image">图片消息</option>
+                <option value="voice">语音消息</option>
+            </select>
+            <br>
+            <button onclick="testSendMessage()">发送消息</button>
+            <button onclick="testGetChatHistory()">获取聊天记录</button>
+            <div id="messageResult" class="result"></div>
+        </div>
+
+        <!-- 群聊测试 -->
+        <div class="test-section">
+            <h3>4. 群聊管理API测试</h3>
+            <input type="text" id="groupName" placeholder="群聊名称" value="测试群聊">
+            <input type="text" id="groupDescription" placeholder="群聊描述" value="这是一个测试群聊">
+            <br>
+            <button onclick="testCreateGroup()">创建群聊</button>
+            <button onclick="testGetMyGroups()">获取我的群聊</button>
+            <div id="groupResult" class="result"></div>
+        </div>
+
+        <!-- WebSocket测试 -->
+        <div class="test-section">
+            <h3>5. WebSocket实时通信测试</h3>
+            <button onclick="testWebSocket()">连接WebSocket</button>
+            <button onclick="disconnectWebSocket()">断开连接</button>
+            <div id="wsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // API基础URL
+        const API_BASE = 'http://localhost:8082/api/user-chat';
+        let websocket = null;
+
+        // 显示结果
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        // 1. 测试基础连接
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/swagger-ui.html`);
+                if (response.ok) {
+                    showResult('connectionResult', '✅ 后端连接成功！Swagger文档可访问');
+                } else {
+                    showResult('connectionResult', `❌ 连接失败: ${response.status}`, false);
+                }
+            } catch (error) {
+                showResult('connectionResult', `❌ 连接错误: ${error.message}`, false);
+            }
+        }
+
+        // 2. 测试获取好友列表
+        async function testGetFriendsList() {
+            const userId = document.getElementById('userId').value;
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/friends/list?userId=${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult('friendsResult', `好友列表API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('friendsResult', `❌ 获取好友列表失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试添加好友
+        async function testAddFriend() {
+            const userId = document.getElementById('userId').value;
+            const friendId = document.getElementById('friendId').value;
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/friends/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        friendId: parseInt(friendId),
+                        message: '我想加你为好友',
+                        source: 'search'
+                    })
+                });
+                const data = await response.json();
+                showResult('friendsResult', `添加好友API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('friendsResult', `❌ 添加好友失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试搜索用户
+        async function testSearchUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/users/search?keyword=test`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult('friendsResult', `搜索用户API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('friendsResult', `❌ 搜索用户失败: ${error.message}`, false);
+            }
+        }
+
+        // 3. 测试发送消息
+        async function testSendMessage() {
+            const userId = document.getElementById('userId').value;
+            const friendId = document.getElementById('friendId').value;
+            const content = document.getElementById('messageContent').value;
+            const messageType = document.getElementById('messageType').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/messages/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        senderId: parseInt(userId),
+                        receiverId: parseInt(friendId),
+                        messageType: messageType,
+                        content: content
+                    })
+                });
+                const data = await response.json();
+                showResult('messageResult', `发送消息API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('messageResult', `❌ 发送消息失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试获取聊天记录
+        async function testGetChatHistory() {
+            const userId = document.getElementById('userId').value;
+            const friendId = document.getElementById('friendId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/messages/history?userId=${userId}&friendId=${friendId}&page=1&size=20`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult('messageResult', `聊天记录API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('messageResult', `❌ 获取聊天记录失败: ${error.message}`, false);
+            }
+        }
+
+        // 4. 测试创建群聊
+        async function testCreateGroup() {
+            const userId = document.getElementById('userId').value;
+            const groupName = document.getElementById('groupName').value;
+            const groupDescription = document.getElementById('groupDescription').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/group/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        creatorId: parseInt(userId),
+                        groupName: groupName,
+                        groupDescription: groupDescription,
+                        maxMembers: 200,
+                        initialMembers: []
+                    })
+                });
+                const data = await response.json();
+                showResult('groupResult', `创建群聊API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('groupResult', `❌ 创建群聊失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试获取我的群聊
+        async function testGetMyGroups() {
+            const userId = document.getElementById('userId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/group/my?userId=${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult('groupResult', `我的群聊API响应:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('groupResult', `❌ 获取我的群聊失败: ${error.message}`, false);
+            }
+        }
+
+        // 5. 测试WebSocket连接
+        function testWebSocket() {
+            const userId = document.getElementById('userId').value;
+            
+            try {
+                websocket = new WebSocket(`ws://localhost:8082/ws/chat/native?userId=${userId}`);
+                
+                websocket.onopen = function(event) {
+                    showResult('wsResult', '✅ WebSocket连接成功！');
+                    
+                    // 发送心跳消息
+                    setTimeout(() => {
+                        if (websocket && websocket.readyState === WebSocket.OPEN) {
+                            websocket.send(JSON.stringify({
+                                type: 'heartbeat',
+                                timestamp: Date.now()
+                            }));
+                            showResult('wsResult', '✅ WebSocket连接成功！已发送心跳消息');
+                        }
+                    }, 1000);
+                };
+                
+                websocket.onmessage = function(event) {
+                    const message = JSON.parse(event.data);
+                    showResult('wsResult', `📨 收到WebSocket消息:\n${JSON.stringify(message, null, 2)}`);
+                };
+                
+                websocket.onerror = function(error) {
+                    showResult('wsResult', `❌ WebSocket错误: ${error.message}`, false);
+                };
+                
+                websocket.onclose = function(event) {
+                    showResult('wsResult', `🔌 WebSocket连接已关闭 (代码: ${event.code})`);
+                };
+                
+            } catch (error) {
+                showResult('wsResult', `❌ WebSocket连接失败: ${error.message}`, false);
+            }
+        }
+
+        // 断开WebSocket连接
+        function disconnectWebSocket() {
+            if (websocket) {
+                websocket.close();
+                websocket = null;
+                showResult('wsResult', '🔌 WebSocket连接已手动断开');
+            }
+        }
+
+        // 页面加载时自动测试连接
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

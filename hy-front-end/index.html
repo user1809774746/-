@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- PWA 基础配置 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#3B82F6" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="旅行助手" />
+    <meta name="application-name" content="旅行规划助手" />
+    <meta name="msapplication-TileColor" content="#3B82F6" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- SEO 优化 -->
+    <title>旅行规划助手 - 智能路线规划与景点收藏</title>
+    <meta name="description" content="智能旅行规划助手，提供路线规划、景点收藏、AI智能推荐等功能，让你的旅行更轻松愉快。" />
+    <meta name="keywords" content="旅行规划,路线规划,景点收藏,旅游助手,AI推荐" />
+    <meta name="author" content="旅行规划团队" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- 图标配置 -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    
+    <!-- 启动画面 (iOS) -->
+    <meta name="apple-mobile-web-app-title" content="旅行助手" />
+    <link rel="apple-touch-startup-image" 
+          media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" 
+          href="/icons/splash-1125x2436.png" />
+    <link rel="apple-touch-startup-image" 
+          media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" 
+          href="/icons/splash-828x1792.png" />
+    <link rel="apple-touch-startup-image" 
+          media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" 
+          href="/icons/splash-1242x2208.png" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="旅行规划助手 - 智能路线规划与景点收藏" />
+    <meta property="og:description" content="智能旅行规划助手，提供路线规划、景点收藏、AI智能推荐等功能，让你的旅行更轻松愉快。" />
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:url" content="https://your-domain.com" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="旅行规划助手" />
+    <meta name="twitter:description" content="智能旅行规划助手，让你的旅行更轻松愉快。" />
+    <meta name="twitter:image" content="/icons/icon-512x512.png" />
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- 预加载关键资源 -->
+    <link rel="preconnect" href="https://api.dify.ai" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    
+    <!-- PWA 安装提示样式 -->
+    <style>
+      /* PWA 动画样式 */
+      .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+      }
+      
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      
+      /* 防止页面缩放 */
+      * {
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      input, textarea {
+        -webkit-user-select: text;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

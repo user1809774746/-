@@ -1,0 +1,22 @@
+请将下面的信息复制到 src/config/aiConfig.js 文件中：
+
+const aiConfig = {
+  enabled: true,  // ✅ 启用AI
+  
+  // 替换为您的工作流ID（从Dify复制）
+  workflowId: '在这里粘贴您的工作流ID',
+  
+  // 替换为您的API密钥（从Dify复制，app-开头）
+  apiKey: 'app-在这里粘贴您的API密钥',
+  
+  // ... 其他字段保持不变
+};
+
+示例：
+const aiConfig = {
+  enabled: true,
+  workflowId: 'f8c91234-5678-90ab-cdef-1234567890ab',
+  apiKey: 'app-abcdefghijklmnopqrstuvwxyz1234',
+  // ...
+};
+

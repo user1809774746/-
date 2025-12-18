@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式API调用示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        #chat-container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        #message-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        #send-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #send-button:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>流式API聊天示例</h1>
+    <div id="chat-container"></div>
+    <textarea id="message-input" rows="4" placeholder="请输入消息..."></textarea>
+    <button id="send-button">发送</button>
+
+    <script>
+        /**
+         * 从字符串中提取完整的JSON对象
+         * @param {string} str - 包含JSON的字符串
+         * @returns {Object} 包含解析的JSON对象和剩余字符串的对象
+         */
+        function extractJson(str) {
+            let depth = 0;
+            let inString = false;
+            let escapeNext = false;
+            let startIndex = -1;
+            
+            // 跳过开头的非JSON字符
+            for (let i = 0; i < str.length; i++) {
+                if (str[i] === '{') {
+                    startIndex = i;
+                    break;
+                }
+            }
+            
+            if (startIndex === -1) {
+                return { json: null, remaining: str };
+            }
+            
+            // 遍历字符，确定JSON对象的结束位置
+            for (let i = startIndex; i < str.length; i++) {
+                const char = str[i];
+                
+                if (escapeNext) {
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\' && inString) {
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if (char === '"') {
+                    inString = !inString;
+                    continue;
+                }
+                
+                if (inString) continue;
+                
+                if (char === '{' || char === '[') {
+                    depth++;
+                } else if (char === '}' || char === ']') {
+                    depth--;
+                    
+                    // 如果深度为0，说明找到了完整的JSON对象
+                    if (depth === 0) {
+                        try {
+                            const jsonString = str.substring(startIndex, i + 1);
+                            const json = JSON.parse(jsonString);
+                            const remaining = str.substring(i + 1);
+                            return { json, remaining };
+                        } catch (e) {
+                            // 如果解析失败，继续寻找
+                            continue;
+                        }
+                    }
+                }
+            }
+            
+            // 没有找到完整的JSON对象
+            return { json: null, remaining: str };
+        }
+
+        /**
+         * 处理流式响应
+         * @param {ReadableStreamDefaultReader} reader - 响应体的reader
+         * @param {TextDecoder} decoder - 文本解码器
+         * @param {function} onItem - 当收到type为'item'的JSON对象时的回调函数
+         * @param {function} onComplete - 当流完成时的回调函数
+         * @param {function} onError - 当发生错误时的回调函数
+         */
+        function processStream(reader, decoder, onItem, onComplete, onError) {
+            let buffer = '';
+            
+            function readStream() {
+                reader.read().then(({ done, value }) => {
+                    if (done) {
+                        // 处理缓冲区中可能剩余的数据
+                        try {
+                            if (buffer.trim()) {
+                                const result = extractJson(buffer.trim());
+                                if (result.json && result.json.type === 'item' && result.json.content) {
+                                    onItem(result.json.content);
+                                }
+                            }
+                        } catch (e) {
+                            console.error('处理最终缓冲区数据时出错:', e);
+                        }
+                        
+                        onComplete();
+                        return;
+                    }
+                    
+                    // 将新数据添加到缓冲区
+                    buffer += decoder.decode(value, { stream: true });
+                    
+                    // 尝试从缓冲区中提取所有完整的JSON对象
+                    let extractionResult;
+                    while ((extractionResult = extractJson(buffer)) && extractionResult.json) {
+                        const json = extractionResult.json;
+                        buffer = extractionResult.remaining;
+                        
+                        try {
+                            // 只处理类型为'item'的JSON对象，并且包含content字段
+                            if (json.type === 'item' && json.content !== undefined) {
+                                onItem(json.content);
+                            }
+                        } catch (e) {
+                            console.error('处理JSON对象时出错:', e, json);
+                        }
+                    }
+                    
+                    // 继续处理流
+                    readStream();
+                }).catch(error => {
+                    console.error('流处理错误:', error);
+                    try {
+                        // 尝试处理剩余缓冲区
+                        if (buffer.trim()) {
+                            const result = extractJson(buffer.trim());
+                            if (result.json && result.json.type === 'item' && result.json.content) {
+                                onItem(result.json.content);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('处理错误后的缓冲区数据时出错:', e);
+                    }
+                    
+                    onError(error);
+                });
+            }
+            
+            readStream();
+        }
+
+        // 使用示例
+        function callApi(message, onContentUpdate, onComplete, onError) {
+            const payload = {
+                chatInput: message,
+                sessionId: '1001010086123456',
+                action: 'sendMessage'
+            };
+            
+            // 更新为新的API地址
+            fetch('https://a004.app.n8n.cloud/webhook/663ada4d-edd9-42f0-a2e7-fea4a42a7419/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let accumulatedContent = '';
+                
+                processStream(
+                    reader,
+                    decoder,
+                    (content) => {
+                        // 累积内容并更新
+                        accumulatedContent += content;
+                        onContentUpdate(accumulatedContent);
+                    },
+                    () => {
+                        // 完成后的处理
+                        onComplete(accumulatedContent);
+                    },
+                    (error) => {
+                        // 处理错误
+                        onError(error, accumulatedContent);
+                    }
+                );
+            })
+            .catch(error => {
+                console.error('请求错误:', error);
+                onError(error, '');
+            });
+        }
+
+        // DOM操作和事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatContainer = document.getElementById('chat-container');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            
+            // 存储当前的AI消息元素和加载元素
+            let currentBotMessage = null;
+            let currentLoadingElement = null;
+            
+            // 添加消息到聊天容器
+            function addMessageToChat(content, isUser = false) {
+                if (isUser) {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                    messageElement.innerHTML = `<strong>${isUser ? '你:' : 'AI:'}</strong> ${content}`;
+                    chatContainer.appendChild(messageElement);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    return messageElement;
+                } else {
+                    // 如果已有AI消息，更新内容
+                    if (currentBotMessage) {
+                        currentBotMessage.innerHTML = `<strong>AI:</strong> ${content}`;
+                    } else {
+                        // 创建新的AI消息元素
+                        currentBotMessage = document.createElement('div');
+                        currentBotMessage.className = 'message bot-message';
+                        currentBotMessage.innerHTML = `<strong>AI:</strong> ${content}`;
+                        chatContainer.appendChild(currentBotMessage);
+                    }
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    return currentBotMessage;
+                }
+            }
+            
+            // 添加加载状态
+            function showLoading() {
+                // 清除之前的加载状态
+                hideLoading();
+                
+                currentLoadingElement = document.createElement('div');
+                currentLoadingElement.className = 'loading';
+                currentLoadingElement.textContent = 'AI正在思考中...';
+                chatContainer.appendChild(currentLoadingElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // 隐藏加载状态
+            function hideLoading() {
+                if (currentLoadingElement && currentLoadingElement.parentNode === chatContainer) {
+                    chatContainer.removeChild(currentLoadingElement);
+                }
+                currentLoadingElement = null;
+            }
+            
+            // 重置AI消息状态
+            function resetBotMessageState() {
+                currentBotMessage = null;
+                currentLoadingElement = null;
+            }
+            
+            // 发送消息处理函数
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (!message) return;
+                
+                // 重置之前的AI消息状态
+                resetBotMessageState();
+                
+                // 添加用户消息到聊天界面
+                addMessageToChat(message, true);
+                messageInput.value = '';
+                
+                // 显示加载状态
+                showLoading();
+                
+                // 调用API
+                callApi(
+                    message,
+                    (content) => {
+                        // 隐藏加载状态
+                        hideLoading();
+                        // 更新AI响应
+                        addMessageToChat(content);
+                    },
+                    (completeContent) => {
+                        // 完成后的处理
+                        console.log('响应完成:', completeContent);
+                        // 重置状态
+                        setTimeout(resetBotMessageState, 1000);
+                    },
+                    (error, partialContent) => {
+                        // 隐藏加载状态
+                        hideLoading();
+                        // 错误处理
+                        let errorMessage = `错误: ${error.message}`;
+                        if (partialContent) {
+                            errorMessage += `\n已接收内容: ${partialContent}`;
+                        }
+                        addMessageToChat(errorMessage);
+                        // 重置状态
+                        setTimeout(resetBotMessageState, 3000);
+                    }
+                );
+            }
+            
+            // 绑定事件
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // 初始欢迎消息
+            addMessageToChat('你好！我是AI助手，有什么我可以帮助你的吗？');
+        });
+    </script>
+</body>
+</html>

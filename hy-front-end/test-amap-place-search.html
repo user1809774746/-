@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>高德 Place Text 关键字搜索测试</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+    label { display: block; margin: 10px 0 5px; font-weight: bold; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { margin-top: 10px; padding: 8px 16px; }
+    pre { background: #f5f5f5; padding: 10px; border-radius: 4px; max-height: 260px; overflow: auto; }
+    ul { margin-top: 10px; padding-left: 20px; }
+  </style>
+</head>
+<body>
+  <h1>高德 Place Text 关键字搜索测试</h1>
+
+  <label>API Key（与 src/config/amapConfig.js 中的 apiKey 一致）</label>
+  <input id="apiKey" placeholder="在这里填你自己的 Key" />
+
+  <label style="margin-top:15px;">搜索关键词（城市 / 景点）</label>
+  <input id="keyword" value="北京" />
+
+  <button onclick="testPlaceSearch()">测试关键字搜索</button>
+
+  <h3>调试日志：</h3>
+  <pre id="log"></pre>
+
+  <h3>搜索结果（前 5 条）：</h3>
+  <ul id="results"></ul>
+
+  <script>
+    function logLine(msg) {
+      const log = document.getElementById('log');
+      log.textContent += msg + '\n';
+    }
+
+    async function testPlaceSearch() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const keyword = document.getElementById('keyword').value.trim();
+      const log = document.getElementById('log');
+      const results = document.getElementById('results');
+
+      log.textContent = '';
+      results.innerHTML = '';
+
+      if (!apiKey) {
+        logLine('❌ 请输入 API Key');
+        return;
+      }
+      if (!keyword) {
+        logLine('❌ 请输入搜索关键词');
+        return;
+      }
+
+      const url =
+        'https://restapi.amap.com/v3/place/text'
+        + '?key=' + encodeURIComponent(apiKey)
+        + '&keywords=' + encodeURIComponent(keyword)
+        + '&types=&city=&children=1&offset=10&page=1&extensions=all';
+
+      logLine('请求 URL: ' + url);
+
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        console.log('PlaceText 响应:', data);
+        logLine('status: ' + data.status);
+        logLine('info: ' + data.info);
+        logLine('count: ' + data.count);
+
+        if (data.status !== '1') {
+          logLine('❌ 接口返回错误，status !== 1');
+          return;
+        }
+        if (!Array.isArray(data.pois) || data.pois.length === 0) {
+          logLine('⚠️ 没有返回任何 POI（data.pois 为空）');
+          return;
+        }
+
+        const top = data.pois.slice(0, 5);
+        top.forEach((poi, idx) => {
+          const li = document.createElement('li');
+          li.textContent =
+            (idx + 1) + '. ' + poi.name + ' ｜ '
+            + (poi.cityname || poi.adname || '') + ' ｜ '
+            + (poi.address || '');
+          results.appendChild(li);
+        });
+
+        logLine('✅ 成功返回 ' + data.pois.length + ' 条 POI，已展示前 5 条');
+      } catch (e) {
+        console.error(e);
+        logLine('❌ fetch 失败: ' + (e.message || e.toString()));
+      }
+    }
+  </script>
+</body>
+</html>

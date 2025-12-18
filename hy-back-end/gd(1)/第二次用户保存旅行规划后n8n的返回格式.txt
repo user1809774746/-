@@ -1,0 +1,200 @@
+[
+  {
+    "text": "保存成功!您的旅行计划已成功保存到数据库。",
+    "travel_plan": {
+      "title": "石家庄到邯郸两日游",
+      "destination": "邯郸",
+      "travel_days": 2,
+      "date": "2025.01.02-2025.01.03",
+      "total_budget": 5000,
+      "budget_breakdown": {
+        "transportation": 400,
+        "accommodation": 500,
+        "tickets": 100,
+        "food": 400,
+        "other": 100
+      },
+      "daily_itinerary": [
+        {
+          "day": 1,
+          "date": "2025.01.02",
+          "activities": [
+            {
+              "time": "09:00 - 11:30",
+              "activity": "参观赵云博物馆",
+              "location": "河北省邯郸市赵乡镇",
+              "city": "邯郸",
+              "description": "纪念三国演义中的名将赵云，了解其生平事迹。",
+              "cost": 0,
+              "transportation": "自驾/出租车",
+              "photo": "http://store.is.autonavi.com/showpic/56f93b1234106b597202bc97be37610b"
+            },
+            {
+              "time": "12:00 - 13:30",
+              "activity": "参观邯郸博物馆",
+              "location": "邯郸市人民路138号",
+              "city": "邯郸",
+              "description": "展示邯郸的历史文化和珍贵文物。",
+              "cost": 0,
+              "transportation": "步行",
+              "photo": "http://store.is.autonavi.com/showpic/bcf66aa0ba1297021833eb61c5ec64a3"
+            },
+            {
+              "time": "13:30 - 14:30",
+              "activity": "午餐",
+              "location": "邯郸市区",
+              "city": "邯郸",
+              "description": "当地小吃（如邯郸驴肉火烧）。",
+              "cost": 50,
+              "transportation": "步行",
+              "photo": ""
+            },
+            {
+              "time": "15:00 - 16:30",
+              "activity": "游览燕下都遗址",
+              "location": "邯郸市涉县",
+              "city": "邯郸",
+              "description": "中国古代燕国的都城遗址，历史悠久。",
+              "cost": 30,
+              "transportation": "自驾/出租车",
+              "photo": "http://store.is.autonavi.com/showpic/0c4c3946974359d55c7b35c66b8b75e"
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2025.01.03",
+          "activities": [
+            {
+              "time": "09:00 - 11:00",
+              "activity": "游览邯郸市广场",
+              "location": "邯郸市永安大道",
+              "city": "邯郸",
+              "description": "邯郸市中心广场，适合散步和拍照。",
+              "cost": 0,
+              "transportation": "步行",
+              "photo": "http://store.is.autonavi.com/showpic/970472eeb805243972c6e40c6533c473"
+            },
+            {
+              "time": "11:30 - 12:30",
+              "activity": "午餐",
+              "location": "市区附近餐厅",
+              "city": "邯郸",
+              "description": "尝试邯郸特色美食。",
+              "cost": 50,
+              "transportation": "步行",
+              "photo": ""
+            },
+            {
+              "time": "13:00 - 16:00",
+              "activity": "游览邯郸武安天龙山",
+              "location": "武安市天龙山",
+              "city": "邯郸",
+              "description": "以奇石和绝美自然风光闻名，也是人文古迹的集中地。",
+              "cost": 50,
+              "transportation": "自驾/出租车",
+              "photo": "http://store.is.autonavi.com/showpic/b55b0f50d4ac85b780227b614df4408f"
+            }
+          ]
+        }
+      ],
+      "accommodation_recommendations": [
+        {
+          "name": "邯郸四星级酒店",
+          "type": "舒适型",
+          "location": "邯郸市",
+          "price_per_night": 250,
+          "advantages": "靠近市中心，交通便利。",
+          "photo": "http://store.is.autonavi.com/showpic/c10169a924c66511d95d528435d38537"
+        },
+        {
+          "name": "邯郸宾馆",
+          "type": "经济型",
+          "location": "邯郸市",
+          "price_per_night": 150,
+          "advantages": "性价比高，适合预算游客。",
+          "photo": "http://store.is.autonavi.com/showpic/a867bf2714c6c46984efdeca0e7d802c"
+        }
+      ],
+      "attraction_details": [
+        {
+          "name": "赵云博物馆",
+          "ticket_price": {
+            "adult": 0,
+            "student": 0,
+            "elderly": 0
+          },
+          "log_lat": "36.6131,114.5034",
+          "opening_hours": "08:30 - 17:30",
+          "must_see_spots": [
+            "赵云雕像",
+            "历史展览"
+          ],
+          "tips": "适合对三国文化感兴趣的游客。"
+        },
+        {
+          "name": "邯郸博物馆",
+          "ticket_price": {
+            "adult": 0,
+            "student": 0,
+            "elderly": 0
+          },
+          "log_lat": "36.6100,114.4792",
+          "opening_hours": "09:00 - 17:00",
+          "must_see_spots": [
+            "邯郸历史文化展",
+            "珍贵文物"
+          ],
+          "tips": "提前查阅开放时间。"
+        },
+        {
+          "name": "燕下都遗址",
+          "ticket_price": {
+            "adult": 30,
+            "student": 15,
+            "elderly": 15
+          },
+          "log_lat": "36.8443,114.6410",
+          "opening_hours": "08:00 - 17:00",
+          "must_see_spots": [
+            "遗址博物馆",
+            "古城墙"
+          ],
+          "tips": "建议早晨前往，游客较少。"
+        },
+        {
+          "name": "邯郸市广场",
+          "ticket_price": {
+            "adult": 0,
+            "student": 0,
+            "elderly": 0
+          },
+          "log_lat": "36.6170,114.4915",
+          "opening_hours": "全天开放",
+          "must_see_spots": [
+            "音乐喷泉",
+            "雕塑"
+          ],
+          "tips": "适合拍照和散步。"
+        },
+        {
+          "name": "天龙山",
+          "ticket_price": {
+            "adult": 50,
+            "student": 25,
+            "elderly": 25
+          },
+          "log_lat": "36.6921,113.9619",
+          "opening_hours": "08:00 - 18:00",
+          "must_see_spots": [
+            "奇石",
+            "自然风景"
+          ],
+          "tips": "建议穿舒适的鞋子，适合登山和观景。"
+        }
+      ],
+      "total_tips": "推荐提前理顺交通路线，避免高峰期出行。",
+      "special_requirements": ""
+    }
+  }
+]

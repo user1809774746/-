@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>管理员登录测试工具</h1>
+    
+    <div class="form-group">
+        <label for="apiUrl">API地址：</label>
+        <input type="text" id="apiUrl" value="http://localhost:8081/api/auth/login" />
+    </div>
+
+    <div class="form-group">
+        <label for="userType">用户类型：</label>
+        <select id="userType">
+            <option value="user">普通用户 (user)</option>
+            <option value="admin" selected>管理员 (admin)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="phone">手机号：</label>
+        <input type="text" id="phone" value="18888888888" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">密码：</label>
+        <input type="text" id="password" value="123123" />
+    </div>
+
+    <button onclick="testLogin()">测试登录</button>
+    <button onclick="testDirectQuery()">测试数据库查询</button>
+
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const userType = document.getElementById('userType').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+
+            const requestData = {
+                phone: phone,
+                password: password,
+                userType: userType
+            };
+
+            resultDiv.innerHTML = '<div class="info">正在测试登录...</div>';
+
+            try {
+                console.log('发送请求:', requestData);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                console.log('响应状态:', response.status);
+                
+                const data = await response.json();
+                console.log('响应数据:', data);
+
+                let resultHtml = `
+                    <div class="${data.code === 200 ? 'success' : 'error'}">
+                        <h3>测试结果</h3>
+                        <p><strong>HTTP状态码:</strong> ${response.status}</p>
+                        <p><strong>响应码:</strong> ${data.code}</p>
+                        <p><strong>消息:</strong> ${data.message || data.msg}</p>
+                        <p><strong>完整响应:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+
+                if (data.code === 200 && data.data && data.data.token) {
+                    resultHtml += `
+                        <div class="success" style="margin-top: 10px;">
+                            <h4>✅ 登录成功！</h4>
+                            <p><strong>Token:</strong> ${data.data.token.substring(0, 50)}...</p>
+                            <p><strong>手机号:</strong> ${data.data.phone}</p>
+                            <p><strong>用户类型:</strong> ${data.data.userType}</p>
+                        </div>
+                    `;
+                }
+
+                resultDiv.innerHTML = resultHtml;
+
+            } catch (error) {
+                console.error('请求失败:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ 请求失败</h3>
+                        <p><strong>错误:</strong> ${error.message}</p>
+                        <p><strong>说明:</strong> 可能是网络问题或后端服务未启动</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testDirectQuery() {
+            const resultDiv = document.getElementById('result');
+            const phone = document.getElementById('phone').value;
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h3>📋 数据库信息检查</h3>
+                    <p><strong>管理员表:</strong> administrator_info</p>
+                    <p><strong>查询条件:</strong> phone = '${phone}'</p>
+                    <p><strong>预期数据:</strong></p>
+                    <pre>
+admin_name: 156156
+phone: 18888888888
+password: 123123 (明文存储)
+                    </pre>
+                    <h4>⚠️ 可能的问题：</h4>
+                    <ul>
+                        <li>后端可能对密码进行了加密（BCrypt、MD5等）</li>
+                        <li>数据库中的密码可能不是明文</li>
+                        <li>后端验证逻辑可能有问题</li>
+                    </ul>
+                    <h4>🔍 建议检查：</h4>
+                    <ol>
+                        <li>查看后端日志，确认收到的请求参数</li>
+                        <li>检查后端 AuthController 的 login 方法</li>
+                        <li>确认后端使用的密码加密方式</li>
+                        <li>尝试使用加密后的密码</li>
+                    </ol>
+                </div>
+            `;
+        }
+
+        // 页面加载时显示说明
+        window.onload = function() {
+            document.getElementById('result').innerHTML = `
+                <div class="info">
+                    <h3>📖 使用说明</h3>
+                    <ol>
+                        <li>确认后端服务已启动（默认端口：8081）</li>
+                        <li>填写管理员账号信息（默认已填写）</li>
+                        <li>点击"测试登录"查看结果</li>
+                        <li>如果失败，查看详细错误信息</li>
+                    </ol>
+                    <h4>💡 提示</h4>
+                    <p>如果登录失败显示"手机号或密码错误"，可能是：</p>
+                    <ul>
+                        <li>❌ 密码在数据库中是加密存储的，不是明文 '123123'</li>
+                        <li>❌ 后端没有正确实现管理员登录逻辑</li>
+                        <li>❌ admin_name 和 phone 字段匹配逻辑有问题</li>
+                    </ul>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>
+

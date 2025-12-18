@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理员快速注册 - 测试工具</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 32px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header-icon {
+      font-size: 48px;
+      color: #f59e0b;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #1f2328;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .alert {
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .alert-info {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      border: 1px solid #93c5fd;
+      color: #1e40af;
+    }
+
+    .alert-success {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      border: 1px solid #6ee7b7;
+      color: #065f46;
+    }
+
+    .alert-error {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+    }
+
+    .alert i {
+      font-size: 20px;
+      margin-top: 2px;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-group {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-outline {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: #f0f9ff;
+    }
+
+    .result-box {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-box pre {
+      background: #1f2937;
+      color: #10b981;
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+
+    .test-accounts {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .test-accounts h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #374151;
+    }
+
+    .account-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: white;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .account-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .account-label {
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .account-value {
+      color: #1f2328;
+      font-family: 'Courier New', monospace;
+    }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 24px 0;
+    }
+
+    .code-block {
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    .code-block .comment {
+      color: #6b7280;
+    }
+
+    .code-block .string {
+      color: #10b981;
+    }
+
+    .code-block .keyword {
+      color: #8b5cf6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-icon">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <h1>管理员快速注册</h1>
+      <p>前端测试工具 - 无需验证码创建管理员账号</p>
+    </div>
+
+    <div class="alert alert-info">
+      <i class="fa-solid fa-info-circle"></i>
+      <div class="alert-content">
+        <div class="alert-title">使用说明</div>
+        <div>此工具用于快速创建管理员账号，密码将自动使用BCrypt加密存储。请确保后端服务已启动。</div>
+      </div>
+    </div>
+
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="phone">
+          <i class="fa-solid fa-phone"></i> 手机号
+        </label>
+        <input 
+          type="tel" 
+          id="phone" 
+          placeholder="请输入11位手机号" 
+          value="18888888888"
+          maxlength="11"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">
+          <i class="fa-solid fa-lock"></i> 密码
+        </label>
+        <input 
+          type="text" 
+          id="password" 
+          placeholder="请输入密码（至少6位）" 
+          value="123123"
+          minlength="6"
+          required
+        >
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary" id="registerBtn">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>注册管理员</span>
+        </button>
+        <button type="button" class="btn btn-success" id="testLoginBtn" disabled>
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>测试登录</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="result-box" id="resultBox">
+      <h3 style="margin-bottom: 8px; color: #374151;">
+        <i class="fa-solid fa-terminal"></i> 响应结果
+      </h3>
+      <pre id="resultContent"></pre>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="test-accounts">
+      <h3>
+        <i class="fa-solid fa-clipboard-list"></i> 默认测试账号
+      </h3>
+      <div class="account-item">
+        <span class="account-label">手机号：</span>
+        <span class="account-value">18888888888</span>
+      </div>
+      <div class="account-item">
+        <span class="account-label">密码：</span>
+        <span class="account-value">123123</span>
+      </div>
+      <div class="account-item">
+        <span class="account-label">类型：</span>
+        <span class="account-value">管理员</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <button type="button" class="btn btn-outline" onclick="window.location.href='/'">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>返回登录页</span>
+      </button>
+    </div>
+
+    <div style="margin-top: 24px; padding: 16px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; font-size: 13px; color: #78350f;">
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <i class="fa-solid fa-exclamation-triangle" style="color: #f59e0b;"></i>
+        <strong>安全提示</strong>
+      </div>
+      <p style="margin: 0;">此接口仅用于开发测试。生产环境请添加权限控制或删除此接口。</p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8081';
+    
+    // 注册管理员
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const registerBtn = document.getElementById('registerBtn');
+      const resultBox = document.getElementById('resultBox');
+      const resultContent = document.getElementById('resultContent');
+      const testLoginBtn = document.getElementById('testLoginBtn');
+
+      // 表单验证（按照接口文档规范）
+      // 1. 检查手机号是否为空
+      if (!phone || phone === '') {
+        showAlert('error', '手机号不能为空', '请输入手机号');
+        return;
+      }
+
+      // 2. 检查密码是否为空
+      if (!password || password === '') {
+        showAlert('error', '密码不能为空', '请输入密码');
+        return;
+      }
+
+      // 3. 验证手机号格式（正则：^1[3-9]\d{9}$）
+      if (!/^1[3-9]\d{9}$/.test(phone)) {
+        showAlert('error', '手机号格式不正确', '请输入正确的11位中国大陆手机号（1[3-9]开头）');
+        return;
+      }
+
+      // 4. 验证密码长度（≥6位）
+      if (password.length < 6) {
+        showAlert('error', '密码长度至少6位', '密码长度必须至少为6位字符');
+        return;
+      }
+
+      // 禁用按钮，显示加载状态
+      registerBtn.disabled = true;
+      registerBtn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i><span>注册中...</span>';
+
+      try {
+        // 按照接口文档规范调用
+        const response = await fetch(`${API_BASE_URL}/api/auth/admin/quick-register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'  // 必须设置为 application/json
+          },
+          body: JSON.stringify({ 
+            phone: phone,      // 手机号（11位）
+            password: password // 密码（≥6位）
+          })
+        });
+
+        // 检查HTTP状态
+        console.log('HTTP状态:', response.status);
+        console.log('响应头:', response.headers.get('content-type'));
+
+        // 获取原始响应文本
+        const responseText = await response.text();
+        console.log('原始响应:', responseText);
+
+        // 显示原始响应
+        resultBox.classList.add('show');
+
+        // 尝试解析JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+          resultContent.textContent = JSON.stringify(data, null, 2);
+        } catch (parseError) {
+          resultContent.textContent = `原始响应:\n${responseText}\n\n解析错误: ${parseError.message}`;
+          showAlert('error', '响应格式错误', '后端返回的不是有效的JSON格式，可能是接口不存在或后端错误');
+          return;
+        }
+
+        // 按照接口文档处理响应
+        // 成功响应：{ code: 200, message: "操作成功", data: { phone, message } }
+        // 失败响应：{ code: 400, message: "错误信息", data: null }
+        
+        if (data.code === 200) {
+          // 注册成功
+          showAlert('success', '✅ 注册成功', 
+            `管理员账号创建成功！\n手机号：${data.data.phone}\n${data.data.message}`);
+          testLoginBtn.disabled = false;
+          
+          // 保存账号信息供测试登录使用
+          sessionStorage.setItem('test_phone', phone);
+          sessionStorage.setItem('test_password', password);
+          
+          console.log('✅ 注册成功，账号信息:', data.data);
+        } else if (data.code === 400) {
+          // 参数错误
+          showAlert('error', '❌ 参数错误', data.message);
+          console.error('参数错误:', data.message);
+        } else if (data.code === 500) {
+          // 服务器错误
+          showAlert('error', '❌ 服务器错误', data.message);
+          console.error('服务器错误:', data.message);
+        } else {
+          // 其他错误
+          showAlert('error', '❌ 注册失败', data.message || '未知错误');
+          console.error('未知错误:', data);
+        }
+      } catch (error) {
+        console.error('请求错误:', error);
+        showAlert('error', '请求失败', error.message + '\n\n请检查：\n1. 后端是否已启动\n2. 端口是否为8081\n3. 接口是否存在');
+        resultBox.classList.add('show');
+        resultContent.textContent = `错误详情:\n${error.message}\n\n可能的原因:\n1. 后端服务未启动\n2. CORS配置问题\n3. 接口路径错误\n4. 网络连接问题`;
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i><span>注册管理员</span>';
+      }
+    });
+
+    // 测试登录
+    document.getElementById('testLoginBtn').addEventListener('click', async () => {
+      const phone = sessionStorage.getItem('test_phone') || document.getElementById('phone').value.trim();
+      const password = sessionStorage.getItem('test_password') || document.getElementById('password').value.trim();
+      const testLoginBtn = document.getElementById('testLoginBtn');
+      const resultBox = document.getElementById('resultBox');
+      const resultContent = document.getElementById('resultContent');
+
+      testLoginBtn.disabled = true;
+      testLoginBtn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i><span>登录中...</span>';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            phone,
+            password,
+            userType: 'admin'
+          })
+        });
+
+        // 检查HTTP状态
+        console.log('登录HTTP状态:', response.status);
+
+        // 获取原始响应文本
+        const responseText = await response.text();
+        console.log('登录原始响应:', responseText);
+
+        // 显示原始响应
+        resultBox.classList.add('show');
+
+        // 尝试解析JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+          resultContent.textContent = JSON.stringify(data, null, 2);
+        } catch (parseError) {
+          resultContent.textContent = `原始响应:\n${responseText}\n\n解析错误: ${parseError.message}`;
+          showAlert('error', '响应格式错误', '后端返回的不是有效的JSON格式');
+          return;
+        }
+
+        if (data.code === 200) {
+          showAlert('success', '登录成功！', `Token已获取，可以前往登录页测试`);
+          console.log('Token:', data.data.token);
+        } else {
+          showAlert('error', '登录失败', data.message || '未知错误');
+        }
+      } catch (error) {
+        console.error('登录请求错误:', error);
+        showAlert('error', '请求失败', error.message);
+        resultBox.classList.add('show');
+        resultContent.textContent = `错误详情:\n${error.message}`;
+      } finally {
+        testLoginBtn.disabled = false;
+        testLoginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i><span>测试登录</span>';
+      }
+    });
+
+    // 显示提示框
+    function showAlert(type, title, message) {
+      // 移除旧的提示
+      const oldAlert = document.querySelector('.alert-dynamic');
+      if (oldAlert) {
+        oldAlert.remove();
+      }
+
+      // 创建新提示
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dynamic`;
+      alert.innerHTML = `
+        <i class="fa-solid fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i>
+        <div class="alert-content">
+          <div class="alert-title">${title}</div>
+          <div>${message}</div>
+        </div>
+      `;
+
+      const container = document.querySelector('.container');
+      const form = document.getElementById('registerForm');
+      container.insertBefore(alert, form);
+
+      // 3秒后自动移除
+      setTimeout(() => {
+        alert.style.transition = 'opacity 0.3s ease';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 300);
+      }, 3000);
+    }
+
+    // 页面加载时检查后端连接
+    window.addEventListener('load', async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/admin/quick-register`, {
+          method: 'OPTIONS'
+        });
+        console.log('✅ 后端连接正常');
+      } catch (error) {
+        showAlert('error', '后端连接失败', '请确保后端服务已启动（端口8081）');
+      }
+    });
+  </script>
+</body>
+</html>
+
